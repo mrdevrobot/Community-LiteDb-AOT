@@ -21,7 +21,7 @@ Performance benchmarks comparing **LiteDB Original** (reflection-based) vs **Com
 - AOT uses: Shared mappers
 - Expected: ~20-30% faster due to zero reflection overhead
 
-## ?? How to Run
+## :rocket: How to Run
 
 ```bash
 # Build in Release mode
@@ -55,7 +55,7 @@ Based on our implementation:
 - ? **Memory allocation**: Same or better than reflection
 - ? **First-time cost**: Expression Trees compiled once in static constructor (~5-10µs), then zero overhead
 
-## ?? Technical Details
+## :microscope: Technical Details
 
 ### LiteDB Original:
 - Uses `BsonMapper` with reflection

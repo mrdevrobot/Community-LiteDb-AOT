@@ -342,7 +342,17 @@ dotnet test
 
 ## :bar_chart: Benchmarks
 
-Run benchmarks to compare performance:
+**Community.LiteDB.Aot is 2-4x faster than standard LiteDB!**
+
+| Scenario | Speedup | Details |
+|----------|---------|---------|
+| Simple Entities | **2.3-3.5x** | Object initializers |
+| DDD Value Objects | **1.4-3.2x** | Expression Trees for private setters |
+| Complex Nested | **2.4-3.8x** | Recursive mappers |
+
+:point_right: **Full benchmark results**: [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md)
+
+Run benchmarks yourself:
 
 ```bash
 cd Community.LiteDB.Aot.Benchmarks
