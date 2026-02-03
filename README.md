@@ -5,22 +5,144 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NuGet](https://img.shields.io/nuget/v/Community.LiteDB.Aot)](https://www.nuget.org/packages/Community.LiteDB.Aot)
 
-## ?? Overview
+## :dart: Overview
 
 `Community.LiteDB.Aot` is a thin, AOT-compatible layer on top of [LiteDB](https://github.com/litedb-org/LiteDB) that enables:
 
-- ? **Native AOT compilation** - Full support for .NET 8 Native AOT
-- ? **Clean Architecture** - Zero dependencies in domain entities
-- ? **EF Core-style API** - Familiar `DbContext` pattern
-- ? **Same database format** - Compatible with standard LiteDB files
-- ? **Progressive migration** - Use alongside existing LiteDB code
+- :zap: **Native AOT compilation** - Full support for .NET 8 Native AOT
+- :building_construction: **Clean Architecture** - Zero dependencies in domain entities
+- :art: **EF Core-style API** - Familiar `DbContext` pattern
+- :floppy_disk: **Same database format** - Compatible with standard LiteDB files
+- :arrows_counterclockwise: **Progressive migration** - Use alongside existing LiteDB code
+- :rocket: **Source Generators** - Compile-time mapper generation with Expression Trees
+- :dart: **DDD Support** - Value Objects, Strongly-Typed IDs, Private Setters
+- :label: **Data Annotations** - [Key], [Required], [MaxLength], [Range] support
 
-## ?? Quick Start
+## :sparkles: Key Features
+
+### 1. **Native AOT Compilation**
+Full support for .NET 8 Native AOT with automatic trimming of reflection-based code (~30-40% size reduction).
+
+### 2. **Clean Architecture Support**
+Your domain entities stay **pure** - zero infrastructure dependencies:
+
+```csharp
+// Clean domain entity
+public class Order
+{
+    public int OrderId { get; set; }
+    public decimal Total { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+```
+
+### 3. **Source Generator with Expression Trees**
+Compile-time mapper generation using Expression Trees for:
+- :white_check_mark: **Private setters** support (DDD Value Objects)
+- :white_check_mark: **Complex nested objects** (3+ levels deep)
+- :white_check_mark: **Collections of nested objects** (List<T>)
+- :white_check_mark: **Near-native performance** (compiled delegates)
+- :white_check_mark: **Full AOT compatibility** (no runtime reflection)
+
+### 4. **Strongly-Typed IDs (DDD Value Objects)**
+Support for strongly-typed IDs to avoid primitive obsession:
+
+```csharp
+public class OrderId
+{
+    public Guid Value { get; private set; }
+    
+    public OrderId(Guid value) => Value = value;
+    public static OrderId NewId() => new(Guid.NewGuid());
+}
+
+public class Order
+{
+    public OrderId Id { get; private set; } = OrderId.NewId();
+    public string CustomerName { get; set; }
+    // ...
+}
+```
+
+### 5. **Data Annotations Support**
+Full support for standard Data Annotations attributes:
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+public class UserProfile
+{
+    [Key]
+    public int UserId { get; set; }
+    
+    [Required]
+    [MaxLength(100)]
+    public string Username { get; set; }
+    
+    [Range(18, 120)]
+    public int Age { get; set; }
+}
+```
+
+Supported attributes:
+- `[Key]` - Primary key detection (auto or manual)
+- `[Required]` - Not null validation
+- `[MaxLength]` - String length validation
+- `[Range]` - Numeric range validation
+
+### 6. **Complex Nested Objects**
+Support for deeply nested objects and collections:
+
+```csharp
+public class Company
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    
+    // List of nested objects
+    public List<Address> Offices { get; set; } = new();
+}
+
+public class Address
+{
+    public string Street { get; set; }
+    public string City { get; set; }
+    public Location Coordinates { get; set; }  // 2nd level nesting
+}
+```
+
+### 7. **DDD Value Objects with Private Setters**
+Full support for immutable Value Objects:
+
+```csharp
+public class Money
+{
+    public decimal Amount { get; private set; }
+    public string Currency { get; private set; }
+    
+    public Money(decimal amount, string currency)
+    {
+        Amount = amount;
+        Currency = currency;
+    }
+}
+
+public class Product
+{
+    public int Id { get; set; }
+    public Money Price { get; private set; }
+    
+    public void SetPrice(Money price) => Price = price;
+}
+```
+
+## :package: Quick Start
 
 ### Installation
 
 ```bash
 dotnet add package Community.LiteDB.Aot
+dotnet add package Community.LiteDB.Aot.SourceGenerators
 ```
 
 ### Basic Usage
@@ -48,6 +170,7 @@ public partial class AppDbContext : LiteDbContext
         {
             entity.HasKey(x => x.Id).AutoIncrement();
             entity.Property(x => x.Email).HasIndex().IsUnique();
+            entity.Property(x => x.Name).IsRequired().HasMaxLength(100);
         });
     }
 }
@@ -59,8 +182,8 @@ using var db = new AppDbContext("myapp.db");
 var customer = new Customer { Name = "John", Email = "john@example.com", Age = 30 };
 db.Customers.Insert(customer);
 
-// Query (string-based, AOT-safe)
-var adults = db.Customers.Find("Age >= 18");
+// Query
+var adults = db.Customers.FindAll().Where(c => c.Age >= 18).ToList();
 var john = db.Customers.FindById(new BsonValue(1));
 
 // Update
@@ -71,68 +194,61 @@ db.Customers.Update(customer);
 db.Customers.Delete(new BsonValue(1));
 ```
 
-## ?? Architecture
+## :building_construction: Architecture
 
 ```
-???????????????????????????????????????
-?  Your Application (AOT-published)   ?
-???????????????????????????????????????
-?  Community.LiteDB.Aot (NEW)         ?  ? Thin wrapper
-?  - LiteDbContext                    ?  ? Configuration API
-?  - AotLiteCollection<T>             ?  ? Type-safe collections
-???????????????????????????????????????
-?  LiteDB 5.0 (UNCHANGED)             ?  ? Core engine
-?  ? Engine.* (kept by trimmer)      ?
-?  ? Document.* (kept by trimmer)    ?
-?  ? Client.Mapper.* (TRIMMED)       ?  ? Reflection removed!
-???????????????????????????????????????
++-------------------------------------+
+|  Your Application (AOT-published)  |
++-------------------------------------+
+|  Community.LiteDB.Aot (NEW)        |  <- Thin wrapper
+|  - LiteDbContext                   |  <- Configuration API
+|  - AotLiteCollection<T>            |  <- Type-safe collections
++-------------------------------------+
+|  Source Generator (Compile-time)   |  <- Expression Trees
+|  - IEntityMapper<T>                |  <- BsonDocument <-> T
+|  - Expression Trees for setters    |  <- Private setters support
++-------------------------------------+
+|  LiteDB 5.0 (UNCHANGED)            |  <- Core engine
+|  + Engine.* (kept by trimmer)      |
+|  + Document.* (kept by trimmer)    |
+|  - Client.Mapper.* (TRIMMED)       |  <- Reflection removed!
++-------------------------------------+
 ```
 
 **Key benefit**: The AOT trimmer automatically removes unused reflection-based parts of LiteDB (~30-40% size reduction)
 
-## ?? Key Features
+## :books: Advanced Examples
 
-### 1. Clean Architecture Support
-
-Your domain entities stay **pure** - zero infrastructure dependencies:
+### Using [Key] Attribute
 
 ```csharp
-// ? Clean domain entity
-public class Order
+using System.ComponentModel.DataAnnotations;
+
+public class Product
 {
-    public int OrderId { get; set; }
-    public decimal Total { get; set; }
-    public DateTime CreatedAt { get; set; }
+    [Key]  // <- Source generator automatically detects this
+    public int ProductId { get; set; }
+    
+    public string Name { get; set; }
+    public decimal Price { get; set; }
 }
 
-// Configuration is separate (infrastructure layer)
-modelBuilder.Entity<Order>(entity =>
+// DbContext - NO configuration needed for [Key]!
+public partial class AppDbContext : LiteDbContext
 {
-    entity.HasKey(x => x.OrderId);
-    entity.Property(x => x.Total).IsRequired();
-});
+    public AotLiteCollection<Product> Products => Collection<Product>();
+    
+    protected override void OnModelCreating(EntityModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.ToCollection("products");
+        });
+    }
+}
 ```
 
-### 2. String-Based Queries (AOT-Safe)
-
-No LINQ expressions that require compilation:
-
-```csharp
-// Simple queries
-db.Customers.Find("Age > 18")
-db.Customers.Find("City = 'NYC' AND Active = true")
-
-// Parameterized (injection-safe)
-db.Customers.Find("Name LIKE @search", new BsonValue("%John%"))
-
-// Complex conditions
-db.Customers.Find(@"
-    (Age >= 18 AND City = 'NYC') OR 
-    (VIP = true AND TotalOrders > 100)
-")
-```
-
-### 3. Transactions
+### Transactions
 
 ```csharp
 db.BeginTrans();
@@ -149,7 +265,7 @@ catch
 }
 ```
 
-### 4. Indexes
+### Indexes and Constraints
 
 ```csharp
 modelBuilder.Entity<Customer>(entity =>
@@ -160,10 +276,14 @@ modelBuilder.Entity<Customer>(entity =>
     
     entity.Property(x => x.City)
           .HasIndex("idx_city");
+    
+    entity.Property(x => x.Name)
+          .IsRequired()
+          .HasMaxLength(100);
 });
 ```
 
-## ?? Migration from Standard LiteDB
+## :arrows_counterclockwise: Migration from Standard LiteDB
 
 ### Gradual Migration
 
@@ -188,118 +308,71 @@ var customersNew = newDb.Customers;
 3. **Migrate** repositories one at a time
 4. **Remove** old LiteDB code when done
 
-## ?? Package Structure
+## :package: Package Structure
 
-- **Community.LiteDB.Aot** - Runtime package (~50 KB)
-  - Core interfaces and collections
-  - Depends on `LiteDB >= 5.0.21`
+### Community.LiteDB.Aot
+Runtime package (~50 KB)
+- Core interfaces and collections
+- `LiteDbContext` base class
+- `AotLiteCollection<T>` wrapper
+- Depends on `LiteDB >= 5.0.21`
 
-- **Community.LiteDB.Aot.SourceGenerators** *(Coming soon)*
-  - Compile-time code generation
-  - Automatic mapper creation from `OnModelCreating`
+### Community.LiteDB.Aot.SourceGenerators
+Compile-time source generator
+- Automatic `IEntityMapper<T>` generation
+- Expression Trees for property setters
+- Support for private setters and nested objects
+- [Key] attribute detection
+- Data Annotations validation
 
-## ?? Current Limitations
+## :test_tube: Testing
 
-### Manual Mappers Required
+The project includes comprehensive test suites:
 
-For now, you need to create mappers manually:
+- **KeyAttributeTests** - [Key] attribute detection and auto-increment
+- **PrivateSetterTests** - DDD Value Objects with private setters
+- **ValueObjectIdTests** - Strongly-typed IDs (OrderId, CustomerId, etc.)
+- **NestedObjectTests** - Complex nested objects and collections
+- **DataAnnotationsTests** - Validation attributes support
 
-```csharp
-// TEMPORARY: Manual mapper (will be generated automatically later)
-public partial class AppDbContext
-{
-    protected override void RegisterMappers()
-    {
-        RegisterMapper(new CustomerMapper());
-    }
-}
-
-internal class CustomerMapper : IEntityMapper<Customer>
-{
-    public BsonDocument Serialize(Customer entity) => new BsonDocument
-    {
-        ["_id"] = entity.Id,
-        ["Name"] = entity.Name,
-        // ...
-    };
-    
-    public Customer Deserialize(BsonDocument doc) => new Customer
-    {
-        Id = doc["_id"].AsInt32,
-        Name = doc["Name"].AsString,
-        // ...
-    };
-    
-    // ... other interface members
-}
+Run tests:
+```bash
+dotnet test
 ```
 
-**Coming soon**: Source generator will create these automatically!
+## :bar_chart: Benchmarks
 
-### String-Based Queries Only
+Run benchmarks to compare performance:
 
-No LINQ support yet (not AOT-compatible):
-
-```csharp
-// ? Not supported (requires Expression.Compile)
-db.Customers.Find(x => x.Age > 18)
-
-// ? Use string-based instead
-db.Customers.Find("Age > 18")
+```bash
+cd Community.LiteDB.Aot.Benchmarks
+dotnet run -c Release
 ```
 
-## ??? Roadmap
+Expected results:
+- **Expression Trees** - Near-native performance for property access
+- **Compiled delegates** - 100-1000x faster than reflection
+- **AOT trimming** - 30-40% smaller executable size
 
-### v1.0 (Current) - MVP
-- [x] Core runtime package
-- [x] LiteDbContext base class
-- [x] AotLiteCollection<T>
-- [x] String-based queries
-- [x] Manual mapper interface
-- [x] Sample project
+## :handshake: Contributing
 
-### v1.1 (Next) - Source Generator
-- [ ] Incremental source generator
-- [ ] Automatic mapper generation from `OnModelCreating`
-- [ ] Compile-time validation
-- [ ] Better error messages
+Contributions are welcome! Please open issues or pull requests on [GitHub](https://github.com/mrdevrobot/Community-LiteDb-AOT).
 
-### v1.2 - Enhanced Queries
-- [ ] Fluent query builder API
-- [ ] Strongly-typed query extensions
-- [ ] Pre-compiled queries
+## :page_facing_up: License
 
-### v2.0 - Advanced Features
-- [ ] DbRef support
-- [ ] Change tracking (optional)
-- [ ] Migrations support
-- [ ] Async API
+This project is licensed under the MIT License.
 
-## ?? Contributing
+## :link: Links
 
-Contributions are welcome! This is a **community project**.
+- **Repository**: https://github.com/mrdevrobot/Community-LiteDb-AOT
+- **NuGet Package**: https://www.nuget.org/packages/Community.LiteDB.Aot
+- **LiteDB**: https://github.com/litedb-org/LiteDB
 
-1. Fork the repository
-2. Create your feature branch
-3. Add tests
-4. Submit a pull request
+## :pray: Credits
 
-## ?? License
-
-MIT License - see [LICENSE](LICENSE) file for details
-
-## ?? Acknowledgments
-
-- Built on top of [LiteDB](https://github.com/litedb-org/LiteDB) by Maurício David
-- Inspired by Entity Framework Core's DbContext pattern
-- Community-driven project
-
-## ?? Support
-
-- **Issues**: [GitHub Issues](https://github.com/litedb-org/LiteDB/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/litedb-org/LiteDB/discussions)
-- **Documentation**: [LiteDB Wiki](https://github.com/litedb-org/LiteDB/wiki)
+Built on top of the excellent [LiteDB](https://github.com/litedb-org/LiteDB) project by Mauricio David.
 
 ---
 
-**Made with ?? by the LiteDB community**
+**Made with :heart: by MrDevRobot**
+

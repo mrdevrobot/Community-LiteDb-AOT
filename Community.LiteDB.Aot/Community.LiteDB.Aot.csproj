@@ -14,8 +14,8 @@
     <Description>AOT-compatible wrapper for LiteDB - Use LiteDB with Native AOT compilation</Description>
     <PackageTags>litedb;aot;native-aot;nosql;database;embedded</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/litedb-org/LiteDB</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/litedb-org/LiteDB</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mrdevrobot/Community-LiteDb-AOT</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mrdevrobot/Community-LiteDb-AOT</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     
     <!-- AOT compatibility -->
