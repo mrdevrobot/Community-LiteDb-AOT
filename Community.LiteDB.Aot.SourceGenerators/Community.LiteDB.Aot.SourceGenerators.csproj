@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    
+    <!-- Package metadata -->
+    <PackageId>Community.LiteDB.Aot.SourceGenerators</PackageId>
+    <Version>1.0.0-preview.1</Version>
+    <Authors>LiteDB Community</Authors>
+    <Description>Source generators for Community.LiteDB.Aot - Generates AOT-compatible entity mappers</Description>
+    <PackageTags>litedb;aot;source-generator;roslyn</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    
+    <!-- Important: Include in Analyzers -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Roslyn dependencies -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pack the generator in the analyzers folder -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+</Project>

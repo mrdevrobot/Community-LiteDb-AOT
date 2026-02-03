@@ -1,0 +1,7 @@
+# BenchmarkDotNet artifacts
+BenchmarkDotNet.Artifacts/
+*.log
+
+# Build outputs
+bin/
+obj/

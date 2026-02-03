@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    
+    <!-- Package metadata -->
+    <PackageId>Community.LiteDB.Aot</PackageId>
+    <Version>1.0.0-preview.1</Version>
+    <Authors>MrDevRobot</Authors>
+    <Product>Community.LiteDB.Aot</Product>
+    <Description>AOT-compatible wrapper for LiteDB - Use LiteDB with Native AOT compilation</Description>
+    <PackageTags>litedb;aot;native-aot;nosql;database;embedded</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/litedb-org/LiteDB</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/litedb-org/LiteDB</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    
+    <!-- AOT compatibility -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference to LiteDB (existing package) -->
+    <PackageReference Include="LiteDB" Version="5.0.21" />
+  </ItemGroup>
+
+</Project>

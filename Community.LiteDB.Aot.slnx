@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Community.LiteDB.Aot.Sample/Community.LiteDB.Aot.Sample.csproj" />
+  <Project Path="Community.LiteDB.Aot.SourceGenerators/Community.LiteDB.Aot.SourceGenerators.csproj" />
+  <Project Path="Community.LiteDB.Aot.Tests/Community.LiteDB.Aot.Tests.csproj" />
+  <Project Path="Community.LiteDB.Aot/Community.LiteDB.Aot.csproj" />
+  <Project Path="Community.LiteDB.Aot.Benchmarks/Community.LiteDB.Aot.Benchmarks.csproj" />
+</Solution>
+
